@@ -7,10 +7,7 @@ import org.greenrobot.greendao.annotation.Index;
 import org.greenrobot.greendao.annotation.Keep;
 
 /**
- * Country code and translated name of an {@link openfoodfacts.github.scrachx.openfood.models.Allergen}
- *
- * @author Lobster 2018-03-04
- * @author ross-holloway94 2018-03-14
+ * Created by Lobster on 04.03.18.
  */
 
 @Entity(indexes = {

@@ -23,7 +23,7 @@ public class Allergen {
     @Unique
     private String tag;
 
-    private Boolean enabled; /*If the allergen is being checked for by the user.*/
+    private Boolean enabled;
 
     @ToMany(joinProperties = {
             @JoinProperty(name = "tag", referencedName = "allergenTag")
@@ -142,9 +142,6 @@ public class Allergen {
         myDao.update(this);
     }
 
-    /**
-     * @return True if the user is checking for this allergen.
-     */
     public Boolean getEnabled() {
         return this.enabled;
     }

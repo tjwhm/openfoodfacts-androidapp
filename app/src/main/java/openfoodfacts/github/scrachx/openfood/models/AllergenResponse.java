@@ -4,36 +4,22 @@ import java.util.ArrayList;
 import java.util.Map;
 
 /**
- * Intermediate class between {@link openfoodfacts.github.scrachx.openfood.models.AllergensWrapper} and {@link openfoodfacts.github.scrachx.openfood.models.Allergen}
- *
- * @author Lobster 2018-03-04
- * @author ross-holloway94 2018-03-14
+ * Created by Lobster on 04.03.18.
  */
 
 public class AllergenResponse {
 
-    private String uniqueAllergenID;
+    private String code;
 
     private Map<String, String> names;
 
-    /**
-     * Constructor.
-     *
-     * @param uniqueAllergenId Unique ID of the allergen
-     * @param names            Map of key: Country code, value: Translated name of allergen.
-     */
-    public AllergenResponse(String uniqueAllergenId, Map<String, String> names) {
-        this.uniqueAllergenID = uniqueAllergenId;
+    public AllergenResponse(String code, Map<String, String> names) {
+        this.code = code;
         this.names = names;
     }
 
-    /**
-     * Converts an AllergenResponse object into a new Allergen object.
-     *
-     * @return The newly constructed Allergen object.
-     */
     public Allergen map() {
-        Allergen allergen = new Allergen(uniqueAllergenID, new ArrayList<>());
+        Allergen allergen = new Allergen(code, new ArrayList<>());
         for (Map.Entry<String, String> name : names.entrySet()) {
             allergen.getNames().add(new AllergenName(allergen.getTag(), name.getKey(), name.getValue()));
         }
@@ -41,12 +27,12 @@ public class AllergenResponse {
         return allergen;
     }
 
-    public String getUniqueAllergenID() {
-        return uniqueAllergenID;
+    public String getCode() {
+        return code;
     }
 
-    public void setUniqueAllergenID(String uniqueAllergenID) {
-        this.uniqueAllergenID = uniqueAllergenID;
+    public void setCode(String code) {
+        this.code = code;
     }
 
     public Map<String, String> getNames() {

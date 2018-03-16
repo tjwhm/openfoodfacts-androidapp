@@ -7,14 +7,12 @@ import android.content.pm.ActivityInfo;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.customtabs.CustomTabsIntent;
-import android.support.design.widget.Snackbar;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
 import android.util.Log;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -58,8 +56,6 @@ public class LoginActivity extends BaseActivity implements CustomTabActivityHelp
     Button save;
     @BindView(R.id.buttonCreateAccount)
     Button signup;
-    @BindView(R.id.login_linearlayout)  
-    LinearLayout linearLayout;
 
     private OpenFoodAPIService apiClient;
     private CustomTabActivityHelper customTabActivityHelper;
@@ -76,6 +72,7 @@ public class LoginActivity extends BaseActivity implements CustomTabActivityHelp
 
         setTitle(getString(R.string.txtSignIn));
         setSupportActionBar(toolbar);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
 
         userLoginUri = Uri.parse(getString(R.string.website) + "cgi/user.pl");
@@ -109,21 +106,19 @@ public class LoginActivity extends BaseActivity implements CustomTabActivityHelp
     protected void attemptLogin() {
         String login = loginView.getText().toString();
         String password = passwordView.getText().toString();
+
         if (TextUtils.isEmpty(login)) {
             loginView.setError(getString(R.string.error_field_required));
             loginView.requestFocus();
             return;
         }
+
         if (!(password.length() >= 6)) {
             passwordView.setError(getString(R.string.error_invalid_password));
             passwordView.requestFocus();
             return;
         }
 
-        Snackbar snackbar = Snackbar
-                .make(linearLayout, R.string.toast_retrieving, Snackbar.LENGTH_LONG);
-
-        snackbar.show();
 
         final LoadToast lt = new LoadToast(this);
         save.setClickable(false);
@@ -131,14 +126,14 @@ public class LoginActivity extends BaseActivity implements CustomTabActivityHelp
         lt.setBackgroundColor(ContextCompat.getColor(this, R.color.blue));
         lt.setTextColor(ContextCompat.getColor(this, R.color.white));
         lt.show();
-      
+
         final Activity context = this;
         apiClient.signIn(login, password, "Sign-in").enqueue(new Callback<ResponseBody>() {
             @Override
             public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
                 if (!response.isSuccessful()) {
                     Toast.makeText(context, context.getString(R.string.errorWeb), Toast.LENGTH_LONG).show();
-                    
+                    lt.error();
                     Utils.hideKeyboard(context);
                     return;
                 }
@@ -153,7 +148,7 @@ public class LoginActivity extends BaseActivity implements CustomTabActivityHelp
                 SharedPreferences.Editor editor = context.getSharedPreferences("login", 0).edit();
 
                 if (htmlNoParsed == null || htmlNoParsed.contains("Incorrect user name or password.") || htmlNoParsed.contains("See you soon!")) {
-                   
+                    lt.error();
                     Toast.makeText(context, context.getString(R.string.errorLogin), Toast.LENGTH_LONG).show();
                     loginView.setText("");
                     passwordView.setText("");
@@ -164,7 +159,7 @@ public class LoginActivity extends BaseActivity implements CustomTabActivityHelp
                 } else {
                     // store the user session id (user_session and user_id)
                     for (HttpCookie httpCookie : HttpCookie.parse(response.headers().get("set-cookie"))) {
-                        if (httpCookie.getDomain().equals(".openbeautyfacts.org") && httpCookie.getPath().equals("/")) {
+                        if (httpCookie.getDomain().equals(".openfoodfacts.org") && httpCookie.getPath().equals("/")) {
                             String[] cookieValues = httpCookie.getValue().split("&");
                             for (int i = 0; i < cookieValues.length; i++) {
                                 editor.putString(cookieValues[i], cookieValues[++i]);
@@ -173,14 +168,10 @@ public class LoginActivity extends BaseActivity implements CustomTabActivityHelp
                             break;
                         }
                     }
-                     Snackbar snackbar = Snackbar
-                            .make(linearLayout,R.string.connection, Snackbar.LENGTH_LONG);
-
-                    snackbar.show();
-                    
+                    lt.success();
                     Toast.makeText(context, context.getResources().getText(R.string.txtToastSaved), Toast.LENGTH_LONG).show();
-                    editor.putString("user", login);
-                    editor.putString("pass", password);
+                    editor.putString("user", loginView.getText().toString());
+                    editor.putString("pass", passwordView.getText().toString());
                     editor.apply();
                     infoLogin.setText(R.string.txtInfoLoginOk);
 
@@ -194,7 +185,7 @@ public class LoginActivity extends BaseActivity implements CustomTabActivityHelp
             @Override
             public void onFailure(Call<ResponseBody> call, Throwable t) {
                 Toast.makeText(context, context.getString(R.string.errorWeb), Toast.LENGTH_LONG).show();
-               
+                lt.error();
                 Utils.hideKeyboard(context);
                 t.printStackTrace();
             }
